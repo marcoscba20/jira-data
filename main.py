@@ -8,8 +8,9 @@ import sys
 
 from dotenv import load_dotenv
 
+from src.azure_table_exporter import export_worklogs_to_azure
 from src.downloader import download
-from src.exporter import export_projects, export_worklogs
+from src.exporter import export_projects
 from src.jira_client import create_jira_client
 
 load_dotenv()
@@ -27,12 +28,11 @@ def main() -> None:
     print("Downloading data...")
     projects = download(client, project_keys=project_keys)
 
-    worklogs_path = export_worklogs(projects, output_dir=output_dir)
+    total_worklogs = export_worklogs_to_azure(projects)
     projects_path = export_projects(projects, output_dir=output_dir)
 
-    total_worklogs = sum(len(p.worklog_entries) for p in projects)
     print(f"Done. {len(projects)} project(s), {total_worklogs} worklog entry/entries exported.")
-    print(f"  Worklogs -> {worklogs_path}")
+    print(f"  Worklogs -> Azure Table Storage")
     print(f"  Projects -> {projects_path}")
 
 
